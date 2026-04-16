@@ -10,9 +10,11 @@ from dotenv import load_dotenv
 import os
 import streamlit as st
 
-# Handle both local and Streamlit deployment
 if "OPENAI_API_KEY" in st.secrets:
     os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+
+if "TAVILY_API_KEY" in st.secrets:
+    os.environ["TAVILY_API_KEY"] = st.secrets["TAVILY_API_KEY"]
 else:
     from dotenv import load_dotenv
     load_dotenv()
