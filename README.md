@@ -135,7 +135,7 @@ TAVILY_API_KEY = "your_tavily_api_key"
 ##Outputs
 
 <p align="center">
-  <img src="" width="800"/>
+  <img src="Screenshot 2026-04-16 190949.png" width="800"/>
 </p>
 
 ## 💡 Future Improvements
