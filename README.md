@@ -150,7 +150,7 @@ TAVILY_API_KEY = "your_tavily_api_key"
 ## 👨‍💻 Author
 
 Your Name
-GitHub: https://github.com/your-username
+GitHub: https://github.com/Kreezon
 
 ---
 
