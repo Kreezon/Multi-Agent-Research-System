@@ -3,46 +3,54 @@ import requests
 from bs4 import BeautifulSoup
 from tavily import TavilyClient
 import os
-import streamlit as st
+from dotenv import load_dotenv
 
-# ── Load API key (Streamlit or local) ──
-if "TAVILY_API_KEY" in st.secrets:
-    tavily_api_key = st.secrets["TAVILY_API_KEY"]
-else:
-    from dotenv import load_dotenv
-    load_dotenv()
-    tavily_api_key = os.getenv("TAVILY_API_KEY")
+# ── Load environment variables ──
+load_dotenv()
 
-# Safety check (helps debugging)
+# ── Get Tavily API Key ──
+tavily_api_key = os.getenv("TAVILY_API_KEY")
+
+# ── Safety check ──
 if not tavily_api_key:
-    raise ValueError("TAVILY_API_KEY is missing. Check Streamlit secrets or .env file.")
+    raise ValueError("TAVILY_API_KEY not found.")
 
-# Initialize Tavily
+# ── Initialize Tavily Client ──
 tavily = TavilyClient(api_key=tavily_api_key)
 
-
-# ── Tools ──
+# ── Web Search Tool ──
 @tool
 def web_search(query: str) -> str:
     """Search the web for recent and reliable information on a topic."""
+
     results = tavily.search(query=query, max_results=5)
 
     out = []
-    for r in results['results']:
+
+    for r in results["results"]:
         out.append(
-            f"Title: {r['title']}\nURL: {r['url']}\nSnippet: {r['content'][:300]}\n"
+            f"Title: {r['title']}\n"
+            f"URL: {r['url']}\n"
+            f"Snippet: {r['content'][:300]}\n"
         )
 
     return "\n----\n".join(out)
 
-
+# ── URL Scraper Tool ──
 @tool
 def scrape_url(url: str) -> str:
     """Scrape and return clean text content from a given URL."""
+
     try:
-        resp = requests.get(url, timeout=8, headers={"User-Agent": "Mozilla/5.0"})
+        resp = requests.get(
+            url,
+            timeout=8,
+            headers={"User-Agent": "Mozilla/5.0"}
+        )
+
         soup = BeautifulSoup(resp.text, "html.parser")
 
+        # Remove unwanted tags
         for tag in soup(["script", "style", "nav", "footer"]):
             tag.decompose()
 
