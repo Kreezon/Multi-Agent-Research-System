@@ -5,23 +5,22 @@ from tavily import TavilyClient
 import os
 from dotenv import load_dotenv
 
-# ── Load environment variables ──
+# Load environment variables
 load_dotenv()
 
-# ── Get Tavily API Key ──
+# Get Tavily API key
 tavily_api_key = os.getenv("TAVILY_API_KEY")
 
-# ── Safety check ──
+# Safety check
 if not tavily_api_key:
     raise ValueError("TAVILY_API_KEY not found.")
 
-# ── Initialize Tavily Client ──
+# Initialize Tavily client
 tavily = TavilyClient(api_key=tavily_api_key)
 
-# ── Web Search Tool ──
 @tool
 def web_search(query: str) -> str:
-    """Search the web for recent and reliable information on a topic."""
+    """Search the web for recent and reliable information."""
 
     results = tavily.search(query=query, max_results=5)
 
@@ -36,10 +35,9 @@ def web_search(query: str) -> str:
 
     return "\n----\n".join(out)
 
-# ── URL Scraper Tool ──
 @tool
 def scrape_url(url: str) -> str:
-    """Scrape and return clean text content from a given URL."""
+    """Scrape and return clean text from a URL."""
 
     try:
         resp = requests.get(
@@ -50,7 +48,6 @@ def scrape_url(url: str) -> str:
 
         soup = BeautifulSoup(resp.text, "html.parser")
 
-        # Remove unwanted tags
         for tag in soup(["script", "style", "nav", "footer"]):
             tag.decompose()
 
