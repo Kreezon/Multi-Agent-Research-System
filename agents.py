@@ -5,34 +5,23 @@ from langchain_core.output_parsers import StrOutputParser
 from tools import web_search, scrape_url
 
 import os
-import streamlit as st
+from dotenv import load_dotenv
 
-# ── Load API keys (Streamlit or local) ──
-if "OPENAI_API_KEY" in st.secrets:
-    os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+# ── Load environment variables ──
+load_dotenv()
 
-if "TAVILY_API_KEY" in st.secrets:
-    os.environ["TAVILY_API_KEY"] = st.secrets["TAVILY_API_KEY"]
+# ── Safety checks ──
+if not os.getenv("OPENAI_API_KEY"):
+    raise ValueError("OPENAI_API_KEY not found.")
 
-# Fallback to .env for local development
-if "OPENAI_API_KEY" not in os.environ or "TAVILY_API_KEY" not in os.environ:
-    from dotenv import load_dotenv
-    load_dotenv()
-
-# Optional safety check (recommended)
-if "OPENAI_API_KEY" not in os.environ:
-    raise ValueError("OPENAI_API_KEY not found. Check Streamlit secrets or .env file.")
-
-if "TAVILY_API_KEY" not in os.environ:
-    raise ValueError("TAVILY_API_KEY not found. Check Streamlit secrets or .env file.")
-
+if not os.getenv("TAVILY_API_KEY"):
+    raise ValueError("TAVILY_API_KEY not found.")
 
 # ── Model setup ──
 llm = ChatOpenAI(
     model="gpt-4o-mini",
     temperature=0
 )
-
 
 # ── Agents ──
 def build_search_agent():
@@ -41,18 +30,21 @@ def build_search_agent():
         tools=[web_search]
     )
 
-
 def build_reader_agent():
     return create_agent(
         model=llm,
         tools=[scrape_url]
     )
 
-
 # ── Writer Chain ──
 writer_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are an expert research writer. Write clear, structured and insightful reports."),
-    ("human", """Write a detailed research report on the topic below.
+    (
+        "system",
+        "You are an expert research writer. Write clear, structured and insightful reports."
+    ),
+    (
+        "human",
+        """Write a detailed research report on the topic below.
 
 Topic: {topic}
 
@@ -65,16 +57,21 @@ Structure the report as:
 - Conclusion
 - Sources (list all URLs found in the research)
 
-Be detailed, factual and professional."""),
+Be detailed, factual and professional."""
+    ),
 ])
 
 writer_chain = writer_prompt | llm | StrOutputParser()
 
-
 # ── Critic Chain ──
 critic_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a sharp and constructive research critic. Be honest and specific."),
-    ("human", """Review the research report below and evaluate it strictly.
+    (
+        "system",
+        "You are a sharp and constructive research critic. Be honest and specific."
+    ),
+    (
+        "human",
+        """Review the research report below and evaluate it strictly.
 
 Report:
 {report}
@@ -92,7 +89,8 @@ Areas to Improve:
 - ...
 
 One line verdict:
-..."""),
+..."""
+    ),
 ])
 
 critic_chain = critic_prompt | llm | StrOutputParser()
